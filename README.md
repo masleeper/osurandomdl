@@ -1,3 +1,3 @@
 # osurandomdl
 
-This is intended as a side project where you can randomly download any beatmaps for the rhythym game [osu!](https://osu.ppy.sh/home) based on a set of parameters. I will probably not maintain this much after I am done with it, but if a signicifant issue does arise, just submit an issue or something.
+This is python desktop application utilizing PyQt5 for the GUI. This is intended to allow users to randomly download any beatmaps for the rhythym game [osu!](https://osu.ppy.sh/home) based on a set of parameters. I will most likely be using v1 of the osu! API as v2 requires dealing with OAuth2.0 and I don't feel like dealing with that hassle until I have to. When v1 finally gets completely fazed out I'll switch to v2. As this is under heavy development I will not have installers for a while, so if you want to try out what little I have you'll need to install python 3 and PyQt5 yourself, though I doubt anybody will find this unless I tell them lol.
