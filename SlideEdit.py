@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
+from PyQt5.QtCore import Qt
 from DoubleSlider import DoubleSlider
 
 class SlideEdit(QWidget):
@@ -10,6 +10,7 @@ class SlideEdit(QWidget):
         self.slider.setMinimum(0)
         self.slider.setMaximum(10)
         self.slider.setValue(5)
+        self.slider.setFixedWidth(250)
 
         self.lineEdit = QLineEdit()
         self.lineEdit.setText(str(self.slider.value()))
@@ -22,7 +23,11 @@ class SlideEdit(QWidget):
         self.layout = QHBoxLayout()
         self.layout.addWidget(self.slider)
         self.layout.addWidget(self.lineEdit)
+        self.layout.setAlignment(Qt.AlignRight)
         self.setLayout(self.layout)
+
+    def setAlignment(self, flag):
+        self.layout.setAlignment(flag)
 
     def setSlider(self, value):
         try:
