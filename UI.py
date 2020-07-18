@@ -17,7 +17,7 @@ class MainWindow(QMainWindow):
         self.mapDisplay = MapDisplay()
 
         # tabs for each game mode
-        self.stdOptions = StdOptions()
+        self.stdOptions = StdOptions(self.mapDisplay)
         self.maniaOptions = ManiaOptions()
         self.ctbOptions = CtbOptions()
         self.taikoOptions = TaikoOptions()
