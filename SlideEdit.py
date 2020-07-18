@@ -10,7 +10,7 @@ class SlideEdit(QWidget):
         self.slider.setMinimum(0)
         self.slider.setMaximum(10)
         self.slider.setValue(5)
-        self.slider.setFixedWidth(250)
+        self.slider.setFixedWidth(400)
 
         self.lineEdit = QLineEdit()
         self.lineEdit.setText(str(self.slider.value()))
