@@ -1,6 +1,8 @@
 import requests
 import time
 import datetime
+import concurrent.futures
+import threading
 from Beatmap import Beatmap
 from random import seed
 from random import randint
@@ -22,6 +24,7 @@ def getBeatMaps(options):
 
 rankedList = []
 def findRanked(specMap, minYear,  maxYear):
+    # todo may need to adjust if statement based on year input
     if len(rankedList) == 0:
         buildRankedList(minYear, maxYear)
     seed(time.time())
@@ -34,27 +37,29 @@ def findRanked(specMap, minYear,  maxYear):
 
 
 def buildRankedList(minYear, maxYear):
-    # todo mess with threads
+    rankedSet = set()
+    rankedLock = threading.Lock()
+    numThreads = (maxYear - minYear) + 1
+    print("num threads: ", numThreads)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=numThreads) as executor:
+        for year in range(minYear, maxYear + 1):
+            executor.submit(yearMapGet, year, rankedSet, rankedLock)
+    global rankedList
+    rankedList = list(rankedSet)
+
+def yearMapGet(year, rankedSet, lock):
     key = "a5f4b2d6f62eaf255953635dcd78dd86a02296c8"
     queryParams = {"k": key}
     url = "https://osu.ppy.sh/api/get_beatmaps"
-
-    rankedSet = set()
-    currentYear = datetime.datetime.now().year
-    for year in range(minYear, maxYear + 1):
-        for month in range(1, 13):
-            since = datetime.datetime(year, month, 1).strftime("%Y-%m-%d %H:%M:%S")
-            queryParams["since"] = since
-            response = requests.get(url, params=queryParams).json()
-            for mapJson in response:
-                mapDict = apiToLocal(mapJson)
-                beatmap = Beatmap(mapDict)
-                print(beatmap.beatmapId, " ", year, ", ", month)
+    for month in range(1, 13):
+        since = datetime.datetime(year, month, 1).strftime("%Y-%m-%d %H:%M:%S")
+        queryParams["since"] = since
+        response = requests.get(url, params=queryParams).json()
+        for mapJson in response:
+            mapDict = apiToLocal(mapJson)
+            beatmap = Beatmap(mapDict)
+            with lock:
                 rankedSet.add(beatmap)
-    global rankedList
-    rankedList = list(rankedSet)
-    print("length:" , len(rankedList))
-
 
 def findUnranked(specMap, minYear, maxYear):
     key = "a5f4b2d6f62eaf255953635dcd78dd86a02296c8"
