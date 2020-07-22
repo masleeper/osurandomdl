@@ -13,7 +13,7 @@ def getBeatMaps(options):
     minYear = options["minYear"] if "minYear" in options.keys() else 2007
     currentYear = datetime.datetime.now().year
     maxYear = options["maxYear"] if "maxYear" in options.keys() else currentYear
-    key = "a5f4b2d6f62eaf255953635dcd78dd86a02296c8"
+    key = "get yer own key"
     queryParams = {"k": key}
     url = "https://osu.ppy.sh/api/get_beatmaps"
     specMap = Beatmap(options)
@@ -48,7 +48,7 @@ def buildRankedList(minYear, maxYear):
     rankedList = list(rankedSet)
 
 def yearMapGet(year, rankedSet, lock):
-    key = "a5f4b2d6f62eaf255953635dcd78dd86a02296c8"
+    key = "get yer own key"
     queryParams = {"k": key}
     url = "https://osu.ppy.sh/api/get_beatmaps"
     for month in range(1, 13):
@@ -62,7 +62,7 @@ def yearMapGet(year, rankedSet, lock):
                 rankedSet.add(beatmap)
 
 def findUnranked(specMap, minYear, maxYear):
-    key = "a5f4b2d6f62eaf255953635dcd78dd86a02296c8"
+    key = "get yer own key"
     queryParams = {"k": key}
     url = "https://osu.ppy.sh/api/get_beatmaps"
     maxSetId = int(requests.get(url, queryParams).json()[-1]["beatmapset_id"])
