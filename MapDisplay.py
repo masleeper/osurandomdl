@@ -44,7 +44,6 @@ class MapDisplay(QWidget):
         self.rankedLabel.setText("Ranked Status: " + rankedCodes[self.map.rankedStatus])
 
     def download(self):
-        # todo deal with windows restricted characters for filenames
         id = self.map.beatmapsetId
         cj = browser_cookie3.chrome(domain_name="ppy.sh")
         cstring = ""
@@ -61,7 +60,10 @@ class MapDisplay(QWidget):
         print("RESPONSE")
         contentDisposition = resp.headers["Content-Disposition"]
         filename = contentDisposition[contentDisposition.find("\"") + 1: -2]
-        invalidChars = "<>:\"/\\|?*"
+        invalidChars = ['<', '>', ':', '/', '\\', '|', '?', '*']
+        for invalidChar in invalidChars:
+            while invalidChar in filename:
+                filename = filename.replace(invalidChar, '_')
         print(filename)
         with open(filename, "wb") as f:
             f.write(resp.content)
