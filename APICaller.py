@@ -13,9 +13,6 @@ def getBeatMaps(options):
     minYear = options["minYear"] if "minYear" in options.keys() else 2007
     currentYear = datetime.datetime.now().year
     maxYear = options["maxYear"] if "maxYear" in options.keys() else currentYear
-    key = "get yer own key"
-    queryParams = {"k": key}
-    url = "https://osu.ppy.sh/api/get_beatmaps"
     specMap = Beatmap(options)
     if specMap.hasLeaderboard:
         return findRanked(specMap, minYear, maxYear)
@@ -23,34 +20,54 @@ def getBeatMaps(options):
         return findUnranked(specMap, minYear, maxYear)
 
 rankedList = []
+lstMinYear = 2007
+lstMaxYear = datetime.datetime.now().year
 def findRanked(specMap, minYear,  maxYear):
-    # todo may need to adjust if statement based on year input
+    global lstMinYear, lstMaxYear
     if len(rankedList) == 0:
-        buildRankedList(minYear, maxYear)
+        lstMinYear = minYear
+        lstMaxYear = maxYear
+        buildRankedList(list(range(minYear, maxYear + 1)))
+    else:
+        if minYear != lstMinYear or maxYear != lstMaxYear:
+            yearList = list()
+            if minYear < lstMinYear:
+                yearList.extend(range(minYear, lstMinYear))
+                lstMinYear = minYear
+            if maxYear > lstMaxYear:
+                yearList.extend(range(lstMaxYear + 1, maxYear + 1))
+                lstMaxYear = maxYear
+            buildRankedList(yearList)
     seed(time.time())
     mapNum = randint(0, len(rankedList) - 1)
     randomMap = rankedList[mapNum]
+    attempts = 0
     while not specMap == randomMap:
+        if attempts >= 500:
+            return None
         mapNum = randint(0, len(rankedList) - 1)
         randomMap = rankedList[mapNum]
+        attempts += 1
     return randomMap
 
 
-def buildRankedList(minYear, maxYear):
-    rankedSet = set()
-    rankedLock = threading.Lock()
-    numThreads = (maxYear - minYear) + 1
-    print("num threads: ", numThreads)
-    with concurrent.futures.ThreadPoolExecutor(max_workers=numThreads) as executor:
-        for year in range(minYear, maxYear + 1):
-            executor.submit(yearMapGet, year, rankedSet, rankedLock)
+def buildRankedList(yearList):
     global rankedList
+    rankedSet = set(rankedList)
+    rankedLock = threading.Lock()
+    numThreads = len(yearList)
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=numThreads) as executor:
+        for year in yearList:
+            executor.submit(yearMapGet, year, rankedSet, rankedLock)
+
     rankedList = list(rankedSet)
 
 def yearMapGet(year, rankedSet, lock):
-    key = "get yer own key"
+    key = ""
     queryParams = {"k": key}
     url = "https://osu.ppy.sh/api/get_beatmaps"
+
     for month in range(1, 13):
         since = datetime.datetime(year, month, 1).strftime("%Y-%m-%d %H:%M:%S")
         queryParams["since"] = since
@@ -62,37 +79,35 @@ def yearMapGet(year, rankedSet, lock):
                 rankedSet.add(beatmap)
 
 def findUnranked(specMap, minYear, maxYear):
-    key = "get yer own key"
+    key = ""
     queryParams = {"k": key}
     url = "https://osu.ppy.sh/api/get_beatmaps"
     maxSetId = int(requests.get(url, queryParams).json()[-1]["beatmapset_id"])
 
     seed(time.time())
-    numcalls = 0
+    attempts = 0
     randomMap = Beatmap(dict())
     while not specMap.match(randomMap):
-        if numcalls >= 200:
-            print("calls exceeded")
-            break
-        numcalls += 1
+        if attempts >= 500:
+            return None
+        attempts += 1
         randomSetId = randint(0, maxSetId)
         queryParams["s"] = randomSetId
-        # print(randomSetId)
 
         try:
             response = requests.get(url, params=queryParams)
             time.sleep(.100)
         except:
-            print("API call failed")
+            # API call failed
             return None
-        # print(response.text)
+
         if response.text != "[]":
             resp = response.json()
 
             for beatMap in resp:
                 mapDict = apiToLocal(beatMap)
                 randomMap = Beatmap(mapDict)
-                # print(randomMap.toString())
+
                 if specMap == randomMap:
                     if minYear <= randomMap.year <= maxYear:
                         return randomMap
