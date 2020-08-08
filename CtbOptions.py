@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import *
+from PyQt5.QtWidgets import QVBoxLayout, QLabel, QWidget
 from PyQt5.QtCore import Qt
 
 class CtbOptions(QWidget):

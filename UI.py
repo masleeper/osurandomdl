@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import *
+from PyQt5.QtWidgets import QMainWindow, QHBoxLayout, QTabWidget, QWidget
 from StdOptions import StdOptions
 from ManiaOptions import ManiaOptions
 from CtbOptions import CtbOptions
@@ -6,6 +6,7 @@ from TaikoOptions import TaikoOptions
 from MapDisplay import MapDisplay
 
 class MainWindow(QMainWindow):
+    # todo add way to obtain api key for user
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

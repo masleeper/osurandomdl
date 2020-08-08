@@ -1,10 +1,11 @@
-from PyQt5.QtWidgets import *
+from PyQt5.QtWidgets import QVBoxLayout, QPushButton, QHBoxLayout, QLabel, QLineEdit, QWidget, QRadioButton, QMessageBox
 from PyQt5.QtCore import Qt
 from SlideEdit import SlideEdit
 import re
 import APICaller
 
 class StdOptions(QWidget):
+    # todo cache ranked list on application close
     def __init__(self, mapDisplay, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -121,12 +122,16 @@ class StdOptions(QWidget):
         if not params["valid"]:
             return None
         else:
-            print("Calling API")
+            # print("Calling API")
             matchedMap = APICaller.getBeatMaps(params)
-            if (matchedMap is None):
-                print("Error finding map")
+            if matchedMap is None:
+                msg = QMessageBox()
+                msg.setWindowTitle("No Match Found")
+                msg.setText("500 attempts were made at finding a matching map and one wasn't found."
+                            "Try again or change search parameters.")
+                msg.exec_()
             else:
-               self.mapDisplay.setMap(matchedMap)
+                self.mapDisplay.setMap(matchedMap)
 
 
     def validate(self):
