@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QVBoxLayout, QPushButton, QHBoxLayout, QLabel, QLineEdit, QWidget, QRadioButton, QMessageBox
 from PyQt5.QtCore import Qt
 from SlideEdit import SlideEdit
+from MinMaxEdit import *
 import re
 import APICaller
 
@@ -9,17 +10,17 @@ class StdOptions(QWidget):
     def __init__(self, mapDisplay, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.includeList = []
         self.mapDisplay = mapDisplay
         mainLayout = QVBoxLayout()
-        self.lengthRow = self.lineEditRow("Length")
-        self.bpmRow = self.lineEditRow("BPM")
-        self.minYearRow = self.lineEditRow("Minimum Year")
-        self.maxYearRow = self.lineEditRow("Maximum Year")
-        self.csRow = self.slideEditRow("Circle Size")
-        self.hpRow = self.slideEditRow("HP")
-        self.odRow = self.slideEditRow("Overall Difficulty")
-        self.arRow = self.slideEditRow("Approach Rate")
-        self.srRow = self.slideEditRow("Star Rating")
+        self.lengthRow = self.minMaxRow(0, 10000, "Length")
+        self.bpmRow = self.minMaxRow(0, 1000, "BPM")
+        self.YearRow = self.minMaxRow(2007, 2021, "Year")
+        self.csRow = self.minMaxRow(0.0, 10.0, "Circle Size")
+        self.hpRow = self.minMaxRow(0.0, 10.0, "HP")
+        self.odRow = self.minMaxRow(0.0, 10.0, "Overall Difficulty")
+        self.arRow = self.minMaxRow(0.0, 10.0, "Approach Rate")
+        self.srRow = self.minMaxRow(0.0, 10.0,"Star Rating")
         self.leaderboardRow = self.leaderboardRow()
         self.findButton = QPushButton("Search")
 
@@ -27,8 +28,7 @@ class StdOptions(QWidget):
 
         mainLayout.addWidget(self.lengthRow)
         mainLayout.addWidget(self.bpmRow)
-        mainLayout.addWidget(self.minYearRow)
-        mainLayout.addWidget(self.maxYearRow)
+        mainLayout.addWidget(self.YearRow)
         mainLayout.addWidget(self.csRow)
         mainLayout.addWidget(self.hpRow)
         mainLayout.addWidget(self.odRow)
@@ -43,6 +43,7 @@ class StdOptions(QWidget):
         hLayout = QHBoxLayout()
         label = QLabel(str(text))
         lineEdit = QLineEdit()
+        lineEdit.setPlaceholderText(text)
         includeRadButton = QRadioButton("include")
 
         includeRadButton.setChecked(True)
@@ -52,6 +53,23 @@ class StdOptions(QWidget):
         hLayout.addWidget(includeRadButton)
 
         hLayout.setAlignment(Qt.AlignRight)
+
+        widget = QWidget()
+        widget.setLayout(hLayout)
+        return widget
+
+    def minMaxRow(self, minVal, maxVal, text):
+        hLayout = QHBoxLayout()
+        hLayout.setAlignment(Qt.AlignRight)
+        label = QLabel(str(text))
+
+        minMaxRow = MinMaxEdit(text, minVal, maxVal)
+        includeRadButton = QRadioButton("include")
+        includeRadButton.pressed.connect(lambda: self.addToInclude(minMaxRow))
+
+        hLayout.addWidget(label)
+        hLayout.addWidget(minMaxRow)
+        hLayout.addWidget(includeRadButton)
 
         widget = QWidget()
         widget.setLayout(hLayout)
@@ -108,7 +126,8 @@ class StdOptions(QWidget):
         return slider.value()
 
     def isIncluded(self, row):
-        includeRadio = row.children()[3]
+        numChildren = len(row.children())
+        includeRadio = row.children()[numChildren - 1]
         return includeRadio.isChecked()
 
     def invalidMsg(self, msg):
@@ -117,12 +136,22 @@ class StdOptions(QWidget):
         msgBox.setText(msg)
         msgBox.exec_()
 
+    def addToInclude(self, widget):
+        if self.includeList.count(widget) == 0:
+            self.includeList.append(widget)
+        else:
+            self.includeList.remove(widget)
+
     def search(self):
         params = self.validate()
         if not params["valid"]:
+            msg = QMessageBox()
+            msg.setWindowTitle("Invalid input")
+            msg.setText("Invalid search parameter, check to make sure they're correct")
+            msg.exec_()
             return None
         else:
-            # print("Calling API")
+            print("Calling API")
             matchedMap = APICaller.getBeatMaps(params)
             if matchedMap is None:
                 msg = QMessageBox()
@@ -136,74 +165,14 @@ class StdOptions(QWidget):
 
     def validate(self):
         params = {"valid": True, "mode": 0}
-        if self.isIncluded(self.lengthRow):
-            try:
-                length = int(self.getLineEditText(self.lengthRow))
-                if length < 0:
-                    params["valid"] = False
-                    self.invalidMsg("Enter a positive value for length")
-                    return params
-                else:
-                    params["length"] = length
-            except:
-                self.invalidMsg("Please enter an integer value for length")
-                params["valid"] = False
-                return params
-
-        if self.isIncluded(self.bpmRow):
-            try:
-                bpm = float(self.getLineEditText(self.bpmRow))
-                if bpm < 0:
-                    params["valid"] = False
-                    self.invalidMsg("Enter a positive value for BPM")
-                    return params
-                else:
-                    params["bpm"] = bpm
-            except:
-                self.invalidMsg("Please enter a number for BPM")
-                params["valid"] = False
-                return params
-
-        if self.isIncluded(self.minYearRow):
-            minYearPattern = re.compile("^20(0[7-9]|[1-9][0-9])$")
-            minYear = self.getLineEditText(self.minYearRow)
-            if minYearPattern.match(minYear):
-                params["minYear"] = int(minYear)
+        for minmax in self.includeList:
+            if minmax.validate():
+                params[minmax.name] = [minmax.getMinValEntered(), minmax.getMaxValEntered()]
+                # print(f"{minmax.minEdit.text()} {minmax.maxEdit.text()}")
             else:
                 params["valid"] = False
-                self.invalidMsg("Invalid minimum year")
-                return params
-
-        if self.isIncluded(self.maxYearRow):
-            maxYearPattern = re.compile("^20(0[7-9]|[1-9][0-9])$")
-            maxYear = self.getLineEditText(self.maxYearRow)
-            if maxYearPattern.match(maxYear):
-                minYear = params["minYear"]
-                if (minYear > int(maxYear)):
-                    params["valid"] = False
-                    self.invalidMsg("Minimum year greater than maximum year")
-                    return params
-                else:
-                    params["maxYear"] = int(maxYear)
-            else:
-                params["valid"] = False
-                self.invalidMsg("Invalid maximum year")
-                return params
-
-        if self.isIncluded(self.csRow):
-            params["cs"] = self.getSlideEditVal(self.csRow)
-
-        if self.isIncluded(self.hpRow):
-            params["hp"] = self.getSlideEditVal(self.hpRow)
-
-        if self.isIncluded(self.odRow):
-            params["od"] = self.getSlideEditVal(self.odRow)
-
-        if self.isIncluded(self.arRow):
-            params["ar"] = self.getSlideEditVal(self.arRow)
-
-        if self.isIncluded(self.srRow):
-            params["sr"] = self.getSlideEditVal(self.srRow)
+                print("row invalid")
+                break
 
         if self.isIncluded(self.leaderboardRow):
             checkBoxes = self.leaderboardRow.children()[2].children()
