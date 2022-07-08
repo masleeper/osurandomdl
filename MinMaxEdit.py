@@ -1,3 +1,4 @@
+from math import fabs
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QValidator
@@ -68,15 +69,31 @@ class MinMaxEdit(QWidget):
         self.setLayout(self.layout)
 
     def validate(self):
-        if not (self.minEdit.text().isnumeric() and self.maxEdit.text().isnumeric()):
-            return False
-        return self.getMinValEntered() <= self.getMaxValEntered()
+        minValue = self.getMinValEntered()
+        maxValue = self.getMaxValEntered()
+
+        if (minValue != "") and (maxValue != ""):
+            return self.getMinValEntered() <= self.getMaxValEntered()
+        return False
 
     def getMinValEntered(self):
-        return int(self.minEdit.text()) if isinstance(self.minVal, int) else float(self.minEdit.text())
+        value = self.minEdit.text()
+        if isFloat(value):
+            return float(value)
+        return ""
 
     def getMaxValEntered(self):
-        return int(self.maxEdit.text()) if isinstance(self.maxVal, int) else float(self.maxEdit.text())
+        value = self.maxEdit.text()
+        if isFloat(value):
+            return float(value)
+        return ""
+
+def isFloat(val):
+    try:
+        float(val)
+        return True
+    except:
+        return False
 
     # def getMinValidator(self):
     #     return self.minValidator

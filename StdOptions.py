@@ -147,11 +147,10 @@ class StdOptions(QWidget):
         if not params["valid"]:
             msg = QMessageBox()
             msg.setWindowTitle("Invalid input")
-            msg.setText("Invalid search parameter, check to make sure they're correct")
+            msg.setText(f"Invalid search parameters for \"{params['invalidRow']}\", check to make sure they're correct")
             msg.exec_()
             return None
         else:
-            print("Calling API")
             matchedMap = APICaller.getBeatMaps(params)
             if matchedMap is None:
                 msg = QMessageBox()
@@ -168,10 +167,9 @@ class StdOptions(QWidget):
         for minmax in self.includeList:
             if minmax.validate():
                 params[minmax.name] = [minmax.getMinValEntered(), minmax.getMaxValEntered()]
-                # print(f"{minmax.minEdit.text()} {minmax.maxEdit.text()}")
             else:
                 params["valid"] = False
-                print("row invalid")
+                params["invalidRow"] = minmax.name
                 break
 
         if self.isIncluded(self.leaderboardRow):
