@@ -1,13 +1,13 @@
 class Beatmap:
     def __init__(self, params):
-        self.cs = float(params["cs"]) if "cs" in params.keys() else -1
-        self.hp = float(params["hp"]) if "hp" in params.keys() else -1
-        self.ar = float(params["ar"]) if "ar" in params.keys() else -1
-        self.sr = float(params["sr"]) if "sr" in params.keys() else -1
-        self.od = float(params["od"]) if "od" in params.keys() else -1
-        self.bpm = float(params["bpm"]) if "bpm" in params.keys() else -1
-        self.year = int(params["year"]) if "year" in params.keys() else -1
-        self.length = int(params["length"]) if "length" in params.keys() else -1
+        self.cs = float(params["Circle Size"]) if "Circle Size" in params.keys() else -1
+        self.hp = float(params["HP"]) if "HP" in params.keys() else -1
+        self.ar = float(params["Approach Rate"]) if "Approach Rate" in params.keys() else -1
+        self.sr = float(params["Star Rating"]) if "Star Rating" in params.keys() else -1
+        self.od = float(params["Overall Difficulty"]) if "Overall Difficulty" in params.keys() else -1
+        self.bpm = float(params["BPM"]) if "BPM" in params.keys() else -1
+        self.year = int(params["Year"]) if "Year" in params.keys() else -1
+        self.length = int(params["Length"]) if "Length" in params.keys() else -1
         self.beatmapId = int(params["beatmapId"]) if "beatmapId" in params.keys() else -1
         self.beatmapsetId = int(params["beatmapsetId"]) if "beatmapsetId" in params.keys() else -1
         self.artist = params["artist"] if "artist" in params.keys() else None
@@ -87,3 +87,6 @@ class Beatmap:
 
     def __hash__(self):
         return self.beatmapId
+
+    def compare(self,params):
+        pass

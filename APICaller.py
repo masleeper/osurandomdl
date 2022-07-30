@@ -1,10 +1,11 @@
+from click import option
 import requests
 import time
 import datetime
 import concurrent.futures
 import threading
 from Beatmap import Beatmap
-from random import seed
+from random import random, seed
 from random import randint
 
 def getBeatMaps(options):
@@ -14,15 +15,16 @@ def getBeatMaps(options):
     currentYear = datetime.datetime.now().year
     maxYear = options["maxYear"] if "maxYear" in options.keys() else currentYear
     specMap = Beatmap(options)
-    if specMap.hasLeaderboard:
-        return findRanked(specMap, minYear, maxYear)
-    else:
-        return findUnranked(specMap, minYear, maxYear)
+    print(specMap)
+    # if specMap.hasLeaderboard:
+    #     return findRanked(specMap, minYear, maxYear)
+    # else:
+    #     return findUnranked(specMap, minYear, maxYear)
 
 rankedList = []
 lstMinYear = 2007
 lstMaxYear = datetime.datetime.now().year
-def findRanked(specMap, minYear,  maxYear):
+def findRanked(options, minYear,  maxYear):
     global lstMinYear, lstMaxYear
     if len(rankedList) == 0:
         lstMinYear = minYear
@@ -42,7 +44,7 @@ def findRanked(specMap, minYear,  maxYear):
     mapNum = randint(0, len(rankedList) - 1)
     randomMap = rankedList[mapNum]
     attempts = 0
-    while not specMap == randomMap:
+    while not randomMap.compare(options):
         if attempts >= 500:
             return None
         mapNum = randint(0, len(rankedList) - 1)
@@ -78,7 +80,7 @@ def yearMapGet(year, rankedSet, lock):
             with lock:
                 rankedSet.add(beatmap)
 
-def findUnranked(specMap, minYear, maxYear):
+def findUnranked(options, minYear, maxYear):
     key = ""
     queryParams = {"k": key}
     url = "https://osu.ppy.sh/api/get_beatmaps"
@@ -87,7 +89,7 @@ def findUnranked(specMap, minYear, maxYear):
     seed(time.time())
     attempts = 0
     randomMap = Beatmap(dict())
-    while not specMap.match(randomMap):
+    while not randomMap.compare(options):
         if attempts >= 500:
             return None
         attempts += 1
@@ -108,7 +110,7 @@ def findUnranked(specMap, minYear, maxYear):
                 mapDict = apiToLocal(beatMap)
                 randomMap = Beatmap(mapDict)
 
-                if specMap == randomMap:
+                if randomMap.compare(options):
                     if minYear <= randomMap.year <= maxYear:
                         return randomMap
 
