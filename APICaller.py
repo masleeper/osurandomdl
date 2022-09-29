@@ -10,20 +10,20 @@ from random import randint
 
 def getBeatMaps(options):
     # todo: don't put api key in code, store it somewhere secure in final version
-
-    minYear = options["minYear"] if "minYear" in options.keys() else 2007
+    minYear = int(options["Year"][0]) if "Year" in options.keys() else 2007
     currentYear = datetime.datetime.now().year
-    maxYear = options["maxYear"] if "maxYear" in options.keys() else currentYear
-    specMap = Beatmap(options)
-    print(specMap)
-    # if specMap.hasLeaderboard:
-    #     return findRanked(specMap, minYear, maxYear)
-    # else:
-    #     return findUnranked(specMap, minYear, maxYear)
+    maxYear = int(options["Year"][1]) if "Year" in options.keys() else currentYear
+    print(options)
+    if options["hasLeaderboard"]:
+        return findRanked(options, minYear, maxYear)
+    else:
+        return findUnranked(options, minYear, maxYear)
 
 rankedList = []
 lstMinYear = 2007
 lstMaxYear = datetime.datetime.now().year
+#TODO remove key and replace with read from local file
+apikey=""
 def findRanked(options, minYear,  maxYear):
     global lstMinYear, lstMaxYear
     if len(rankedList) == 0:
@@ -45,6 +45,7 @@ def findRanked(options, minYear,  maxYear):
     randomMap = rankedList[mapNum]
     attempts = 0
     while not randomMap.compare(options):
+        print(randomMap)
         if attempts >= 500:
             return None
         mapNum = randint(0, len(rankedList) - 1)
@@ -66,9 +67,9 @@ def buildRankedList(yearList):
     rankedList = list(rankedSet)
 
 def yearMapGet(year, rankedSet, lock):
-    key = ""
-    queryParams = {"k": key}
+    queryParams = {"k": apikey}
     url = "https://osu.ppy.sh/api/get_beatmaps"
+    print(f'getting maps for {year}')
 
     for month in range(1, 13):
         since = datetime.datetime(year, month, 1).strftime("%Y-%m-%d %H:%M:%S")
@@ -77,12 +78,12 @@ def yearMapGet(year, rankedSet, lock):
         for mapJson in response:
             mapDict = apiToLocal(mapJson)
             beatmap = Beatmap(mapDict)
+            # print(beatmap)
             with lock:
                 rankedSet.add(beatmap)
 
 def findUnranked(options, minYear, maxYear):
-    key = ""
-    queryParams = {"k": key}
+    queryParams = {"k": apikey}
     url = "https://osu.ppy.sh/api/get_beatmaps"
     maxSetId = int(requests.get(url, queryParams).json()[-1]["beatmapset_id"])
 
