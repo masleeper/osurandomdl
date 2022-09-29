@@ -1,13 +1,13 @@
 class Beatmap:
     def __init__(self, params):
-        self.cs = float(params["Circle Size"]) if "Circle Size" in params.keys() else -1
-        self.hp = float(params["HP"]) if "HP" in params.keys() else -1
-        self.ar = float(params["Approach Rate"]) if "Approach Rate" in params.keys() else -1
-        self.sr = float(params["Star Rating"]) if "Star Rating" in params.keys() else -1
-        self.od = float(params["Overall Difficulty"]) if "Overall Difficulty" in params.keys() else -1
-        self.bpm = float(params["BPM"]) if "BPM" in params.keys() else -1
-        self.year = int(params["Year"]) if "Year" in params.keys() else -1
-        self.length = int(params["Length"]) if "Length" in params.keys() else -1
+        self.cs = float(params["cs"]) if "cs" in params.keys() else -1
+        self.hp = float(params["hp"]) if "hp" in params.keys() else -1
+        self.ar = float(params["ar"]) if "ar" in params.keys() else -1
+        self.sr = float(params["sr"]) if "sr" in params.keys() else -1
+        self.od = float(params["od"]) if "od" in params.keys() else -1
+        self.bpm = float(params["bpm"]) if "bpm" in params.keys() else -1
+        self.year = int(params["year"]) if "year" in params.keys() else -1
+        self.length = int(params["length"]) if "length" in params.keys() else -1
         self.beatmapId = int(params["beatmapId"]) if "beatmapId" in params.keys() else -1
         self.beatmapsetId = int(params["beatmapsetId"]) if "beatmapsetId" in params.keys() else -1
         self.artist = params["artist"] if "artist" in params.keys() else None
@@ -26,23 +26,25 @@ class Beatmap:
             self.hasLeaderboard = self.rankedStatus >= 1
 
     def __str__(self):
-        print("mode: ", self.mode)
-        print("length: ", self.length)
-        print("bpm: ", self.bpm)
-        print("cs: ", self.cs)
-        print("hp: ", self.hp)
-        print("od: ", self.od)
-        print("ar: ", self.ar)
-        print("sr: ", self.sr)
-        print("map id: ", self.beatmapId)
-        print("set id: ", self.beatmapsetId)
-        print("artist: ", self.artist)
-        print("song title: ", self.songTitle)
-        print("mapper: ", self.mapper)
-        print("year: ", self.year)
-        print("diff name: ", self.diffName)
-        print("ranked status: ", self.rankedStatus)
-        print("has leaderboard: ", self.hasLeaderboard)
+        ret = ""
+        ret += f'mode: {self.mode}\n'
+        ret += f'length: {self.length}\n'
+        ret += f'bpm: {self.bpm}\n'
+        ret += f'cs: {self.cs}\n'
+        ret += f'hp: {self.hp}\n'
+        ret += f'od: {self.od}\n'
+        ret += f'ar: {self.ar}\n'
+        ret += f'sr: {self.sr}\n'
+        ret += f'map id: {self.beatmapId}\n'
+        ret += f'set id: {self.beatmapId}\n'
+        ret += f'artist: {self.artist}\n'
+        ret += f'song title: {self.songTitle}\n'
+        ret += f'mapper: {self.mapper}\n'
+        ret += f'year: {self.year}\n'
+        ret += f'diff name: {self.diffName}\n'
+        ret += f'ranked status: {self.rankedStatus}\n'
+        ret += f'has leaderboard: {self.hasLeaderboard}\n'
+        return ret
 
     def __eq__(self, obj):
         """
@@ -89,4 +91,30 @@ class Beatmap:
         return self.beatmapId
 
     def compare(self,params):
-        pass
+        if not self._checkRange("Circle Size", self.cs, params):
+            return False
+        if not self._checkRange("HP",self.hp, params):
+            return False
+        if not self._checkRange("Length", self.length, params):
+            return False
+        if not self._checkRange("BPM", self.bpm, params):
+            return False
+        if not self._checkRange("Year", self.year, params):
+            return False
+        if not self._checkRange("Overall Difficulty", self.od, params): 
+            return False
+        if not self._checkRange("Approach Rate", self.ar, params):
+            return False
+        if not self._checkRange("Star Rating", self.sr, params):
+            return False
+        if not self.hasLeaderboard == params["hasLeaderboard"]:
+            return False
+        if not self.mode == params["mode"]:
+            return False
+        return True
+
+    def _checkRange(self, key, value, params):
+        if key in params.keys():
+            low,high = params[key]
+            return low <= value <= high
+        return True
