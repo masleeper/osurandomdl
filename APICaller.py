@@ -4,9 +4,11 @@ import time
 import datetime
 import concurrent.futures
 import threading
+import Cache
 from Beatmap import Beatmap
 from random import random, seed
 from random import randint
+
 
 def getBeatMaps(options):
     # todo: don't put api key in code, store it somewhere secure in final version
@@ -65,6 +67,7 @@ def buildRankedList(yearList):
             executor.submit(yearMapGet, year, rankedSet, rankedLock)
 
     rankedList = list(rankedSet)
+    Cache.store(rankedList)
 
 def yearMapGet(year, rankedSet, lock):
     queryParams = {"k": apikey}
